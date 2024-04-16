@@ -3,8 +3,8 @@
 # 首次运行时执行以下流程，再次运行时存在 /etc/supervisor/conf.d/damon.conf 文件，直接到最后一步
 if [ ! -s /etc/supervisor/conf.d/damon.conf ]; then
 
-  # 设置 Github CDN 及若干变量
-  GH_PROXY=https://mirror.ghproxy.com/
+  # 设置 Github CDN 及若干变量，如是 IPv6 only 或者大陆机器，需要 Github 加速网，可自行查找放在 GH_PROXY 处 ，如 https://mirror.ghproxy.com/ ，能不用就不用，减少因加速网导致的故障。
+  GH_PROXY=
   GRPC_PROXY_PORT=443
   GRPC_PORT=5555
   WEB_PORT=80
@@ -130,8 +130,10 @@ site:
   Theme: "default"
 EOF
 
-  # 下载包含本地数据的 sqlite.db 文件
+  # 下载包含本地数据的 sqlite.db 文件，生成18位随机字符串用于本地 Token
   wget -P ${WORK_DIR}/data/ ${GH_PROXY}https://github.com/fscarmen2/Argo-Nezha-Service-Container/raw/main/sqlite.db
+  LOCAL_TOKEN=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 18)
+  sqlite3 ${WORK_DIR}/data/sqlite.db "update servers set secret='${LOCAL_TOKEN}' where created_at='2023-04-23 13:02:00.770756566+08:00'"
 
   # SSH path 与 GH_CLIENTSECRET 一样
   echo root:"$GH_CLIENTSECRET" | chpasswd root
@@ -262,7 +264,7 @@ stderr_logfile=/dev/null
 stdout_logfile=/dev/null
 
 [program:agent]
-command=$WORK_DIR/nezha-agent -s localhost:$GRPC_PORT -p abcdefghijklmnopqr
+command=$WORK_DIR/nezha-agent -s localhost:$GRPC_PORT -p $LOCAL_TOKEN
 autostart=true
 autorestart=true
 stderr_logfile=/dev/null

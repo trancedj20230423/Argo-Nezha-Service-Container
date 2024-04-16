@@ -33,12 +33,12 @@ Documentation: English version | [中文版](https://github.com/fscarmen2/Argo-N
 * IPv4 / v6 with higher flexibility --- The traditional Nezha needs to deal with IPv4/v6 compatibility between server and client, and also needs to resolve mismatches through tools such as warp. However, this project does not need to consider these issues at all, and can be docked arbitrarily, which is much more convenient and easy!
 * One Argo tunnel for multiple domains and protocols --- Create an intranet-penetrating Argo tunnel for three domains (hostname) and protocols, which can be used for panel access (http), client reporting (tcp) and ssh (optional).
 * Grpc Proxy reverse proxy gRPC data port --- with a certificate for tls termination, then Argo's tunnel configuration with https service pointing to this reverse proxy, enable http2 back to the source, grpc(nezha)->Grpc Proxy->h2(argo)->cf cdn edge->agent
-* Daily automatic backup --- every day at 04:00 BST, the entire Nezha panel folder is automatically backed up to a designated private github repository, including panel themes, panel settings, probe data and tunnel information, the backup retains nearly 5 days of data; the content is so important that it must be placed in the private repository.
+* Daily automatic backup --- Data persistence changed from local to online. Every day at 04:00 BST, the entire Nezha panel folder is automatically backed up to a designated private github repository, including panel themes, panel settings, probe data and tunnel information, the backup retains nearly 5 days of data; the content is so important that it must be placed in the private repository.
 * Automatically update the control panel and scripts daily - Check for the latest official control panel version and backup/restore script at 04:00 every day. If an upgrade is available, perform an automatic update.
 * Manual/automatic restore backup --- check the content of online restore file once a minute, and restore immediately when there is any update.
 * Default built-in local probes --- can easily monitor their own server information
 
-<img width="1609" alt="image" src="https://github.com/fscarmen2/Argo-Nezha-Service-Container/assets/92626977/4893c3cd-5055-468f-8138-6c5460bdd1e4">
+<img width="1609" alt="image" src="https://github.com/fscarmen2/Argo-Nezha-Service-Container/assets/92626977/ecd9d887-68f0-46f9-9a63-eb0275f066eb">
 
 
 ## Prepare variables to be used
@@ -144,12 +144,17 @@ docker run -dit \
 ### docker-compose deployment
 ```
 version: '3.8'
+networks:
+    nezha-dashboard:
+        name: nezha-dashboard
 services.
     argo-nezha.
         image: fscarmen/argo-nezha
-        --pull always
+        pull_policy: always
         container_name: nezha_dashboard
         restart: always
+        networks:
+            - nezha-dashboard
         environment:
             - GH_USER=<fill in github username>
             - GH_EMAIL=<fill in your github email>
@@ -157,7 +162,7 @@ services.
             - GH_REPO=<fill in customized>
             - GH_CLIENTID=<fill in obtained>
             - GH_CLIENTSECRET=<fill in fetched>
-            - ARGO_AUTH='<Fill in the fetched Argo json or token>'
+            - ARGO_AUTH=<Fill in the fetched Argo json or token>
             - ARGO_DOMAIN=<fill in customized>
             - GH_BACKUP_USER=<Optional, Optional, Optional! If it is consistent with GH_USER, you can leave it blank>
             - REVERSE_PROXY_MODE=<Optional, Optional, Optional! If you want to use Nginx or gRPCwebProxy instead of Caddy for reverse proxying, set this value to `nginx` or `grpcwebproxy>
