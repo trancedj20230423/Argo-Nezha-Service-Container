@@ -26,7 +26,7 @@ if [ ! -s /etc/supervisor/conf.d/damon.conf ]; then
 
   # 检测是否需要启用 Github CDN，如能直接连通，则不使用
   for PROXY_URL in "${GITHUB_PROXY[@]}"; do
-    PROXY_STATUS_CODE=$(wget --server-response --spider --quiet --timeout=3 --tries=1 ${PROXY_URL}https://github.com/fscarmen2/Argo-Nezha-Service-Container/raw/main/README.md 2>&1 | awk '/HTTP\//{last_field = $2} END {print last_field}')
+    PROXY_STATUS_CODE=$(wget --server-response --spider --quiet --timeout=3 --tries=1 ${PROXY_URL}https://raw.githubusercontent.com/dsadsadsss/Docker-for-Nezha-Argo-server-v0.x/main/README.md 2>&1 | awk '/HTTP\//{last_field = $2} END {print last_field}')
     [ "$PROXY_STATUS_CODE" = "200" ] && GH_PROXY="$PROXY_URL" && break
   done
 
